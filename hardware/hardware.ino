@@ -46,8 +46,8 @@
 
 
 // MQTT CLIENT CONFIG  
-static const char* pubtopic       = "620012345";                    // Add your ID number here
-static const char* subtopic[]     = {"620012345_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
+static const char* pubtopic       = "620162321";                    // Add your ID number here
+static const char* subtopic[]     = {"620162321_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
 static const char* mqtt_server    = "address or ip";                // Broker IP address or Domain name as a String 
 static uint16_t mqtt_port         = 1883;
 
