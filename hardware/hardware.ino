@@ -31,8 +31,12 @@
 // DEFINE THE PINS THAT WILL BE MAPPED TO THE 7 SEG DISPLAY BELOW, 'a' to 'g'
 #define a     15
 /* Complete all others */
-
-
+#define b     32
+#define c     33
+#define d     25
+#define e     26
+#define f     27
+#define g     14
 
 // DEFINE VARIABLES FOR TWO LEDs AND TWO BUTTONs. LED_A, LED_B, BTN_A , BTN_B
 #define LED_A 4
