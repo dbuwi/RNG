@@ -41,9 +41,9 @@
 // DEFINE VARIABLES FOR TWO LEDs AND TWO BUTTONs. LED_A, LED_B, BTN_A , BTN_B
 #define LED_A 4
 /* Complete all others */
-
-
-
+#define LED_B 5
+#define BTN_A 18
+#define BTN_B 19
 
 // MQTT CLIENT CONFIG  
 static const char* pubtopic       = "620162321";                    // Add your ID number here
@@ -102,6 +102,12 @@ void setup() {
   // CONFIGURE THE ARDUINO PINS OF THE 7SEG AS OUTPUT
   pinMode(a,OUTPUT);
   /* Configure all others here */
+ pinMode(b,OUTPUT);
+ pinMode(c,OUTPUT);
+ pinMode(d,OUTPUT);
+ pinMode(e,OUTPUT);
+ pinMode(f,OUTPUT);
+ pinMode(g,OUTPUT);
 
   initialize();           // INIT WIFI, MQTT & NTP 
   // vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
