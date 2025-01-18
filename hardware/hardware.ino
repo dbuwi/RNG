@@ -44,6 +44,7 @@
 
 
 
+
 // MQTT CLIENT CONFIG  
 static const char* pubtopic       = "620012345";                    // Add your ID number here
 static const char* subtopic[]     = {"620012345_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
