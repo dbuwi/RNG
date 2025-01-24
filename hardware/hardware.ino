@@ -109,6 +109,9 @@ void setup() {
  pinMode(f,OUTPUT);
  pinMode(g,OUTPUT);
 
+ pinMode(BTN_A, INPUT_PULLUP);
+ pinMode(BTN_B, INPUT_PULLUP);
+
   initialize();           // INIT WIFI, MQTT & NTP 
   vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
 
@@ -179,13 +182,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) { 
     received[i] = (char)payload[i];    
   }
+ received[length] = '\0';
 
   // PRINT RECEIVED MESSAGE
   Serial.printf("Payload : %s \n",received);
 
  
   // CONVERT MESSAGE TO JSON
-  JsonDocument doc;
+  StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, received);  
 
   if (error) {
@@ -215,11 +219,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     // Add key:value pairs to Json object according to below schema
     // ‘{"id": "student_id", "timestamp": 1702212234, "number": 9, "ledA": 0, "ledB": 0}’
-    doc["id"]         = "ID"; // Change to your student ID number
+    doc["id"]         = "620162321"; // Change to your student ID number
     doc["timestamp"]  = getTimeStamp();
     /*Add code here to insert all other variabes that are missing from Json object
     according to schema above
     */
+    doc["number"]      = number; // Random number generated
+ doc["LED_A"]       = getLEDStatus(LED_A); 
+ doc["LED_B"]       = getLEDStatus(LED_B);
+
 
     serializeJson(doc, message);  // Seralize / Covert JSon object to JSon string and store in char* array  
     publish("topic", message);    // Publish to a topic that only the Frontend subscribes to.
@@ -248,19 +256,42 @@ bool publish(const char *topic, const char *payload){
 
 void Display(unsigned char number){
   /* This function takes an integer between 0 and 9 as input. This integer must be written to the 7-Segment display */
-  
+  const uint8_t segmentMap[10][7] = {
+{1, 1, 1, 1, 1, 1, 0},    //0
+{0, 1, 1, 0, 0, 0, 0},    //1
+{1, 1, 0, 1, 1, 0, 1},    //2
+{1, 1, 1, 1, 0, 0, 1},    //3
+{0, 1, 1, 0, 0, 1, 1},    //4
+{1, 0, 1, 1, 0, 1, 1},    //5
+{1, 0, 1, 1, 1, 1, 1},    //6
+{1, 1, 1, 0, 0, 0, 0},    //7
+{1, 1, 1, 1, 1, 1, 1},    //8
+{1, 1, 1, 1, 0, 1, 1},    //9
+};
+
+digitalWrite(a, segmentMap[number][0]);
+digitalWrite(b, segmentMap[number][1]);
+digitalWrite(c, segmentMap[number][2]);
+digitalWrite(d, segmentMap[number][3]);
+digitalWrite(e, segmentMap[number][4]);
+digitalWrite(f, segmentMap[number][5]);
+digitalWrite(g, segmentMap[number][6]);
 }
 
 int8_t getLEDStatus(int8_t LED) {
   // RETURNS THE STATE OF A SPECIFIC LED. 0 = LOW, 1 = HIGH  
+ return digitalRead(LED); 
 }
 
 void setLEDState(int8_t LED, int8_t state){
   // SETS THE STATE OF A SPECIFIC LED   
+ return digitalWrite(LED, state);
 }
 
 void toggleLED(int8_t LED){
   // TOGGLES THE STATE OF SPECIFIC LED   
+ int currentState = digitalRead(LED);
+ digitalWrite(LED, !currentState); //Toggles the LED 
 }
 
 void GDP(void){
@@ -270,22 +301,27 @@ void GDP(void){
   /* Add code here to generate a random integer and then assign 
      this integer to number variable below
   */
-   number = 0 ;
-
+  //  number = 0 ;
+    int number = random (0,10); 
+ 
   // DISPLAY integer on 7Seg. by 
   /* Add code here to calling appropriate function that will display integer to 7-Seg*/
-
+    Display(number);
+ 
   // PUBLISH number to topic.
-  JsonDocument doc; // Create JSon object
+  StaticJsonDocument<200> doc; // Create JSon object
   char message[1100]  = {0};
 
-  // Add key:value pairs to Json object according to below schema
+  // Add key:value pairs to JSON object according to the schema
   // ‘{"id": "student_id", "timestamp": 1702212234, "number": 9, "ledA": 0, "ledB": 0}’
-  doc["id"]         = "ID"; // Change to your student ID number
+  doc["id"]         = "620162321"; // Change to your student ID number
   doc["timestamp"]  = getTimeStamp();
   /*Add code here to insert all other variabes that are missing from Json object
   according to schema above
   */
+ doc["number"]      = number; // Random number generated
+ doc["LED_A"]       = getLEDStatus(LED_A); 
+ doc["LED_B"]       = getLEDStatus(LED_B);
 
   serializeJson(doc, message);  // Seralize / Covert JSon object to JSon string and store in char* array
   publish(pubtopic, message);
