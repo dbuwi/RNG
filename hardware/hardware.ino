@@ -26,6 +26,9 @@
 #include <ArduinoJson.h>
 #endif
 
+#include <PubSubClient.h>
+
+
 // DEFINE VARIABLES
 #define ARDUINOJSON_USE_DOUBLE      1 
 // DEFINE THE PINS THAT WILL BE MAPPED TO THE 7 SEG DISPLAY BELOW, 'a' to 'g'
@@ -48,12 +51,14 @@
 // MQTT CLIENT CONFIG  
 static const char* pubtopic       = "620162321";                    // Add your ID number here
 static const char* subtopic[]     = {"620162321_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
-static const char* mqtt_server    = "address or ip";                // Broker IP address or Domain name as a String 
+static const char* mqtt_server    = "broker.emqx.io";                // Broker IP address or Domain name as a String 
 static uint16_t mqtt_port         = 1883;
+static const char *mqtt_username = "emqx";
+static const char *mqtt_password = "public";
 
 // WIFI CREDENTIALS
-const char* ssid                  = "YOUR_SSID"; // Add your Wi-Fi ssid
-const char* password              = "YOUR_PASS"; // Add your Wi-Fi password 
+const char* ssid                  = "MonaConnect"; // Add your Wi-Fi ssid
+const char* password              = ""; // Add your Wi-Fi password 
 
 
 
@@ -108,9 +113,43 @@ void setup() {
  pinMode(e,OUTPUT);
  pinMode(f,OUTPUT);
  pinMode(g,OUTPUT);
-
+ pinMode(LED_A,OUTPUT);
+ pinMode(LED_B,OUTPUT);
  pinMode(BTN_A, INPUT_PULLUP);
  pinMode(BTN_B, INPUT_PULLUP);
+
+ Display(8);
+
+  // Set software serial baud to 115200;
+  Serial.begin(115200);
+  // Connecting to a Wi-Fi network
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.println("Connecting to WiFi..");
+  }
+
+  mqtt.setServer(mqtt_server, mqtt_port);
+  mqtt.setCallback(callback);
+  while (!mqtt.connected()) {
+      String client_id = "esp32-client-";
+      client_id += String(WiFi.macAddress());
+      Serial.printf("The client %s connects to the public MQTT broker\n", client_id.c_str());
+      if (mqtt.connect(client_id.c_str(), mqtt_username, mqtt_password)) {
+          Serial.println("Public EMQX MQTT broker connected");
+          const uint8_t size = sizeof(subtopic)/sizeof(subtopic[0]);
+          for(int x = 0; x< size ; x++){
+            mqtt.subscribe(subtopic[x]);
+          } 
+          break;
+      } else {
+          Serial.print("failed with state ");
+          Serial.print(mqtt.state());
+          delay(2000);
+      }
+  }
+
+  mqtt.publish("620162206", "Hi, I'm ESP32 ^^");
 
   initialize();           // INIT WIFI, MQTT & NTP 
   vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
@@ -121,6 +160,7 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly: 
+  mqtt.loop();
     
 }
 
@@ -137,6 +177,18 @@ void vButtonCheck( void * pvParameters )  {
     for( ;; ) {
         // Add code here to check if a button(S) is pressed
         // then execute appropriate function if a button is pressed  
+          if (digitalRead(BTN_A) == LOW) {
+            Serial.println("Button A Pressed!");
+            
+            int randomNumber = random(0, 10);  // Generate a random number between 0 and 9
+            Display(randomNumber);       // Update the 7-segment display
+            
+            // Wait for the button to be released
+            while (digitalRead(BTN_A) == LOW) {
+                vTaskDelay(50 / portTICK_PERIOD_MS);
+            }
+        }
+
 
         vTaskDelay(200 / portTICK_PERIOD_MS);  
     }
